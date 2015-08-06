@@ -7,7 +7,7 @@
 # You must not remove this notice, or any other, from this software.
 # ----------------------------------------------------------------------------------------------
 Param(
-    [string]$SlackToken,
+    [string]$SlackWebHook,
     [string]$SlackChannel,
     [string]$SiteName,
     [string]$Device,
@@ -19,7 +19,6 @@ Param(
     [string]$Message
 )
 $postSlackMessage = @{
-    token        = $SlackToken;
     channel      = $SlackChannel;
     unfurl_links = "true";
     username     = "PRTG";
@@ -28,7 +27,7 @@ $postSlackMessage = @{
 <$($LinkDevice)|$($Device) $($Name)>
 Status $($Status) $($Down) on $($DateTime)
 ``````$($Message)``````";
-    }
+    } | ConvertTo-Json
 $postSlackMessage | Out-File -FilePath slack.log
 $postSlackMessage.text  | Out-File -FilePath slack.log -Append
-Invoke-RestMethod -Uri https://slack.com/api/chat.postMessage -Body $postSlackMessage | Out-File -FilePath slack.log -Append
+Invoke-RestMethod -Method Post -ContentType 'application/json' -Uri $SlackWebHook -Body $postSlackMessage  | Out-File -FilePath slack.log -Append
